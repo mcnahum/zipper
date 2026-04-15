@@ -18,6 +18,7 @@ targets:
       GENERATE_INFOPLIST_FILE: NO
       INFOPLIST_FILE: Sources/Info.plist
       MACOSX_DEPLOYMENT_TARGET: "13.0"
+      PRODUCT_NAME: Zipper
       SWIFT_VERSION: 5.9
     preBuildScripts:
       - script: |

@@ -24,11 +24,11 @@
 		3C7319681370B2D61D99403C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5E84D3FB24397E7783F9FB69 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7389591708E89721A354685F /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		75ED2604ABAFB4C4BB813294 /* 7zz */ = {isa = PBXFileReference; path = 7zz; sourceTree = "<group>"; };
+		75ED2604ABAFB4C4BB813294 /* 7zz */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = 7zz; sourceTree = "<group>"; };
 		8F86A6DA7F834E24BED87357 /* ConfigurationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationView.swift; sourceTree = "<group>"; };
 		8FEF4A554D71B952AB62F29E /* ArchiveEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveEngine.swift; sourceTree = "<group>"; };
 		92C4BF0F4480A3AD00A6CBEC /* ZipperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipperApp.swift; sourceTree = "<group>"; };
-		98BE0BFE6126BC1106F7BFB8 /* ZipperApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZipperApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		98BE0BFE6126BC1106F7BFB8 /* Zipper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Zipper.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A214D75CDE06A08A1270BB99 /* AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
 		A3AFAEE08A84E686DBE27E74 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C985C47A87CDF776F78FA702 /* FileAssociationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileAssociationManager.swift; sourceTree = "<group>"; };
@@ -39,7 +39,7 @@
 		38954A20366F269F79693B24 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				98BE0BFE6126BC1106F7BFB8 /* ZipperApp.app */,
+				98BE0BFE6126BC1106F7BFB8 /* Zipper.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -98,7 +98,7 @@
 			packageProductDependencies = (
 			);
 			productName = ZipperApp;
-			productReference = 98BE0BFE6126BC1106F7BFB8 /* ZipperApp.app */;
+			productReference = 98BE0BFE6126BC1106F7BFB8 /* Zipper.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -109,8 +109,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 9F737D0EACC6498BB557725A /* Build configuration list for PBXProject "ZipperApp" */;
 			developmentRegion = en;
@@ -244,8 +242,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = ZipperApp.entitlements;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = C85X7E88A8;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
@@ -254,7 +254,9 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ZipperApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kshah00.ZipperApp;
+				PRODUCT_NAME = Zipper;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.9;
 			};
@@ -265,8 +267,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = ZipperApp.entitlements;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = C85X7E88A8;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
@@ -275,7 +279,9 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ZipperApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kshah00.ZipperApp;
+				PRODUCT_NAME = Zipper;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.9;
 			};
