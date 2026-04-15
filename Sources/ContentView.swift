@@ -247,7 +247,9 @@ struct ContentView: View {
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         panel.allowsMultipleSelection = false
-        panel.allowedFileTypes = ArchiveFileClassifier.selectableArchiveExtensions
+        panel.allowedContentTypes = ArchiveFileClassifier.selectableArchiveExtensions.compactMap {
+            UTType(filenameExtension: $0)
+        }
 
         if panel.runModal() == .OK, let url = panel.url {
             handlePickedItem(url, forceExtractionFlow: true)
