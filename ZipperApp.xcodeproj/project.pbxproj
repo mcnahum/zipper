@@ -12,6 +12,7 @@
 		51676C0C7D1C41D5A7538F1F /* AppEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7BD5CD8C0F5EA66CCFDAE31 /* AppEvents.swift */; settings = {COMPILER_FLAGS = "-Wall"; }; };
 		57C11C78FCD9ED2B6C8909F0 /* FileAssociationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C985C47A87CDF776F78FA702 /* FileAssociationManager.swift */; settings = {COMPILER_FLAGS = "-Wall"; }; };
 		58A495B2537F3E3A229412F5 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 096B2947E3769DEDFFFF7588 /* PreferencesView.swift */; settings = {COMPILER_FLAGS = "-Wall"; }; };
+		62B17B71E8374212AA2F6784 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5E84D3FB24397E7783F9FB69 /* Assets.xcassets */; };
 		7802A2135F5429350B6B4667 /* ArchiveEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FEF4A554D71B952AB62F29E /* ArchiveEngine.swift */; settings = {COMPILER_FLAGS = "-Wall"; }; };
 		7EA522BA6CE938341C1F010F /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7389591708E89721A354685F /* Theme.swift */; settings = {COMPILER_FLAGS = "-Wall"; }; };
 		8EC4927188D2B14963DB1F5E /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = A214D75CDE06A08A1270BB99 /* AppPreferences.swift */; settings = {COMPILER_FLAGS = "-Wall"; }; };
@@ -20,6 +21,8 @@
 
 /* Begin PBXFileReference section */
 		096B2947E3769DEDFFFF7588 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
+		3C7319681370B2D61D99403C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		5E84D3FB24397E7783F9FB69 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7389591708E89721A354685F /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		75ED2604ABAFB4C4BB813294 /* 7zz */ = {isa = PBXFileReference; path = 7zz; sourceTree = "<group>"; };
 		8F86A6DA7F834E24BED87357 /* ConfigurationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationView.swift; sourceTree = "<group>"; };
@@ -47,9 +50,11 @@
 				D7BD5CD8C0F5EA66CCFDAE31 /* AppEvents.swift */,
 				A214D75CDE06A08A1270BB99 /* AppPreferences.swift */,
 				8FEF4A554D71B952AB62F29E /* ArchiveEngine.swift */,
+				5E84D3FB24397E7783F9FB69 /* Assets.xcassets */,
 				8F86A6DA7F834E24BED87357 /* ConfigurationView.swift */,
 				A3AFAEE08A84E686DBE27E74 /* ContentView.swift */,
 				C985C47A87CDF776F78FA702 /* FileAssociationManager.swift */,
+				3C7319681370B2D61D99403C /* Info.plist */,
 				096B2947E3769DEDFFFF7588 /* PreferencesView.swift */,
 				7389591708E89721A354685F /* Theme.swift */,
 				92C4BF0F4480A3AD00A6CBEC /* ZipperApp.swift */,
@@ -83,6 +88,7 @@
 			buildPhases = (
 				A14DB3D9D1B349E4C1143B74 /* Copy 7zz */,
 				8B2B0BADB7C3225A296C785A /* Sources */,
+				291144699923DF967E7F1CA0 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -125,6 +131,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		291144699923DF967E7F1CA0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62B17B71E8374212AA2F6784 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXShellScriptBuildPhase section */
 		A14DB3D9D1B349E4C1143B74 /* Copy 7zz */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -142,7 +159,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources\"\ncp \"$SRCROOT/Sources/Resources/7zz\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/\"\nchmod +x \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/7zz\"\n";
+			shellScript = "mkdir -p \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources\"\nDEST=\"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/7zz\"\nchmod u+w \"$DEST\" 2>/dev/null || true\nrm -f \"$DEST\"\n/usr/bin/install -m 755 \"$SRCROOT/Sources/Resources/7zz\" \"$DEST\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -230,16 +247,8 @@
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDocumentTypes_0_CFBundleTypeName = Archive;
-				INFOPLIST_KEY_CFBundleDocumentTypes_0_CFBundleTypeRole = Viewer;
-				INFOPLIST_KEY_CFBundleDocumentTypes_0_LSHandlerRank = Owner;
-				INFOPLIST_KEY_CFBundleDocumentTypes_0_LSItemContentTypes_0 = "public.zip-archive";
-				INFOPLIST_KEY_CFBundleDocumentTypes_0_LSItemContentTypes_1 = "com.rarlab.rar-archive";
-				INFOPLIST_KEY_CFBundleDocumentTypes_0_LSItemContentTypes_2 = "org.7-zip.7-zip-archive";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -259,16 +268,8 @@
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDocumentTypes_0_CFBundleTypeName = Archive;
-				INFOPLIST_KEY_CFBundleDocumentTypes_0_CFBundleTypeRole = Viewer;
-				INFOPLIST_KEY_CFBundleDocumentTypes_0_LSHandlerRank = Owner;
-				INFOPLIST_KEY_CFBundleDocumentTypes_0_LSItemContentTypes_0 = "public.zip-archive";
-				INFOPLIST_KEY_CFBundleDocumentTypes_0_LSItemContentTypes_1 = "com.rarlab.rar-archive";
-				INFOPLIST_KEY_CFBundleDocumentTypes_0_LSItemContentTypes_2 = "org.7-zip.7-zip-archive";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

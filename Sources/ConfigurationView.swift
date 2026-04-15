@@ -205,6 +205,108 @@ private struct CompletionView: View {
     }
 }
 
+private struct AutoCompletionView: View {
+    let outputURL: URL
+    let operationKind: FileOperationKind
+    let onPrimaryAction: (URL) -> Void
+    let onSecondaryAction: (URL) -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            VStack(spacing: 16) {
+                Spacer()
+
+                ZStack {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(Theme.surface)
+                        .frame(width: 90, height: 90)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .stroke(Theme.accent.opacity(0.3), lineWidth: 1)
+                        )
+                    Image(systemName: operationKind == .extract ? "tray.and.arrow.down.fill" : "doc.zipper")
+                        .font(.system(size: 36, weight: .ultraLight))
+                        .foregroundStyle(Theme.accent)
+                        .onDrag {
+                            NSItemProvider(object: outputURL as NSURL)
+                        } preview: {
+                            Image(nsImage: NSWorkspace.shared.icon(forFile: outputURL.path))
+                                .resizable()
+                                .interpolation(.high)
+                                .frame(width: 56, height: 56)
+                        }
+                }
+
+                VStack(spacing: 4) {
+                    Text(outputURL.lastPathComponent)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+
+                    Text(subtitle)
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            Rectangle().fill(Theme.border).frame(height: 1)
+
+            VStack(spacing: 10) {
+                Button { onPrimaryAction(outputURL) } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "folder.fill").font(.system(size: 14))
+                        Text("Reveal in Finder").font(.system(size: 13, weight: .semibold))
+                    }
+                    .foregroundStyle(.black)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 11)
+                    .background(Theme.accent, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                }
+                .buttonStyle(.plain)
+
+                Button { onSecondaryAction(outputURL) } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: secondaryActionIcon).font(.system(size: 12))
+                        Text(secondaryActionTitle).font(.system(size: 12, weight: .medium))
+                    }
+                    .foregroundStyle(Theme.textPrimary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 9)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Theme.border, lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(16)
+        }
+    }
+
+    private var subtitle: String {
+        if operationKind == .extract {
+            return "Extracted folder ready"
+        }
+
+        guard let attrs = try? FileManager.default.attributesOfItem(atPath: outputURL.path),
+              let outSize = attrs[.size] as? Int64 else {
+            return "Archive created"
+        }
+
+        return ByteCountFormatter.string(fromByteCount: outSize, countStyle: .file)
+    }
+
+    private var secondaryActionTitle: String {
+        operationKind == .extract ? "Open Folder" : "Share"
+    }
+
+    private var secondaryActionIcon: String {
+        operationKind == .extract ? "arrow.up.forward.app.fill" : "square.and.arrow.up"
+    }
+}
+
 // MARK: - ConfigurationView
 
 struct ConfigurationView: View {
@@ -231,11 +333,26 @@ struct ConfigurationView: View {
     }
 
     enum CompletionState {
-        case idle, archiving, done(URL), failed(String)
+        case idle, processing, done(URL), failed(String)
+    }
+
+    private enum WorkflowMode {
+        case compression
+        case extraction
+
+        var operationKind: FileOperationKind {
+            switch self {
+            case .compression:
+                return .compress
+            case .extraction:
+                return .extract
+            }
+        }
     }
 
     // MARK: Props
     let url: URL
+    let extractionDirectoryURL: URL?
     let onCancel: () -> Void
 
     // MARK: State
@@ -251,6 +368,10 @@ struct ConfigurationView: View {
     @State private var completionState: CompletionState = .idle
     @State private var keyMonitor: Any?
     @State private var activeArchiveTask: ArchiveTask?
+    @State private var didPrepareExtractionFlow = false
+    @State private var extractionRequiresPassword = false
+    @State private var isInspectingExtractionArchive = false
+    @State private var extractionPasswordMessage: String?
 
     @AppStorage(PreferenceKeys.defaultSaveLocationBookmark) private var defaultSaveLocationBookmark = Data()
     @AppStorage(PreferenceKeys.preferredFormat) private var preferredFormat = "zip"
@@ -271,25 +392,40 @@ struct ConfigurationView: View {
             Group {
                 switch completionState {
                 case .idle:
-                    VStack(spacing: 0) {
-                        stepContent
-                        separator
-                        bottomBar
+                    if workflowMode == .compression {
+                        VStack(spacing: 0) {
+                            stepContent
+                            separator
+                            bottomBar
+                        }
+                    } else if extractionRequiresPassword {
+                        extractionSetupView
+                    } else {
+                        automaticPreparationView
                     }
 
-                case .archiving:
+                case .processing:
                     progressView
 
                 case .done(let outURL):
-                    CompletionView(
-                        outputURL: outURL,
-                        format: format,
-                        encrypt: encrypt,
-                        saveShortcut: saveShortcut,
-                        shareShortcut: shareShortcut,
-                        onSave: saveArchive,
-                        onShare: shareArchive
-                    )
+                    if workflowMode == .compression {
+                        CompletionView(
+                            outputURL: outURL,
+                            format: format,
+                            encrypt: encrypt,
+                            saveShortcut: saveShortcut,
+                            shareShortcut: shareShortcut,
+                            onSave: saveArchive,
+                            onShare: shareArchive
+                        )
+                    } else {
+                        AutoCompletionView(
+                            outputURL: outURL,
+                            operationKind: operationKind,
+                            onPrimaryAction: revealOutput,
+                            onSecondaryAction: secondaryCompletionAction
+                        )
+                    }
 
                 case .failed(let msg):
                     errorView(message: msg)
@@ -301,8 +437,11 @@ struct ConfigurationView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
             format = formats.contains(preferredFormat) ? preferredFormat : "zip"
-            loadTree()
+            if workflowMode == .compression {
+                loadTree()
+            }
             setupKeyMonitor()
+            prepareExtractionFlowIfNeeded()
         }
         .onDisappear {
             removeKeyMonitor()
@@ -312,10 +451,22 @@ struct ConfigurationView: View {
     private var stateKey: String {
         switch completionState {
         case .idle: return "idle_\(currentStep.rawValue)"
-        case .archiving: return "archiving"
+        case .processing: return "processing"
         case .done: return "done"
         case .failed: return "failed"
         }
+    }
+
+    private var workflowMode: WorkflowMode {
+        if ArchiveFileClassifier.isArchive(url) {
+            return .extraction
+        }
+
+        return .compression
+    }
+
+    private var operationKind: FileOperationKind {
+        workflowMode.operationKind
     }
 
     // MARK: - Top Bar
@@ -337,7 +488,7 @@ struct ConfigurationView: View {
 
     private var backLabel: String {
         switch completionState {
-        case .archiving:      return "Cancel"
+        case .processing:     return "Cancel"
         case .done, .failed:  return "Discard"
         case .idle where currentStep == .files: return "Back"
         default: return "Back"
@@ -346,7 +497,7 @@ struct ConfigurationView: View {
 
     private func handleBack() {
         switch completionState {
-        case .archiving:
+        case .processing:
             activeArchiveTask?.cancel()
         case .done, .failed:
             completionState = .idle
@@ -559,6 +710,106 @@ struct ConfigurationView: View {
         .buttonStyle(.plain)
     }
 
+    private var automaticPreparationView: some View {
+        VStack(spacing: 16) {
+            Spacer()
+            Image(systemName: operationKind == .extract ? "tray.and.arrow.down" : "doc.zipper")
+                .font(.system(size: 40, weight: .ultraLight))
+                .foregroundStyle(Theme.accent)
+
+            Text(automaticPreparationTitle)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(Theme.textPrimary)
+
+            Text(url.lastPathComponent)
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.textSecondary)
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .padding(.horizontal, 24)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var extractionSetupView: some View {
+        VStack(spacing: 18) {
+            Spacer()
+
+            ZStack {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(Theme.surface)
+                    .frame(width: 92, height: 92)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .stroke(Theme.accent.opacity(0.35), lineWidth: 1)
+                    )
+
+                Image(systemName: "lock.doc.fill")
+                    .font(.system(size: 34, weight: .ultraLight))
+                    .foregroundStyle(Theme.accent)
+            }
+
+            VStack(spacing: 6) {
+                Text("Password Protected Archive")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary)
+
+                Text(url.lastPathComponent)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textSecondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .padding(.horizontal, 24)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Extract to")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(Theme.textSecondary)
+
+                Text(extractionDestinationURL.path)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(2)
+                    .truncationMode(.middle)
+
+                HStack(spacing: 8) {
+                    Image(systemName: "key.fill")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Theme.textMuted)
+
+                    SecureField("Enter password", text: $password)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 13))
+                        .onSubmit(startExtraction)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .stroke(password.isEmpty ? Theme.border : Theme.accent.opacity(0.6), lineWidth: 1)
+                )
+
+                if let extractionPasswordMessage {
+                    Text(extractionPasswordMessage)
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color.red.opacity(0.9))
+                }
+            }
+            .padding(.horizontal, 24)
+
+            Button("Extract", action: startExtraction)
+                .buttonStyle(GoldButtonStyle())
+                .disabled(password.isEmpty)
+                .opacity(password.isEmpty ? 0.35 : 1)
+
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
     // MARK: - Progress
 
     private var progressView: some View {
@@ -577,7 +828,7 @@ struct ConfigurationView: View {
                     .foregroundStyle(Theme.textPrimary)
             }
             VStack(spacing: 4) {
-                Text("Compressing…").font(.system(size: 14, weight: .medium)).foregroundStyle(Theme.textPrimary)
+                Text(progressTitle).font(.system(size: 14, weight: .medium)).foregroundStyle(Theme.textPrimary)
                 Text(url.lastPathComponent).font(.system(size: 11)).foregroundStyle(Theme.textSecondary).lineLimit(1)
             }
 
@@ -592,10 +843,10 @@ struct ConfigurationView: View {
         VStack(spacing: 16) {
             Spacer()
             Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 40)).foregroundStyle(.red.opacity(0.8))
-            Text("Compression Failed").font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+            Text(errorTitle).font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.textPrimary)
             Text(message).font(.system(size: 12)).foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center).padding(.horizontal, 32)
-            Button("Try Again") { completionState = .idle; currentStep = .files }
+            Button("Try Again", action: retryCurrentOperation)
                 .buttonStyle(GoldButtonStyle())
             Spacer()
         }
@@ -631,6 +882,28 @@ struct ConfigurationView: View {
 
     private var canProceed: Bool { currentStep == .files ? includedCount > 0 : true }
     private var canCompress: Bool { includedCount > 0 && !(encrypt && password.isEmpty) }
+    private var progressTitle: String { operationKind == .extract ? "Extracting…" : "Compressing…" }
+    private var errorTitle: String { operationKind == .extract ? "Extraction Failed" : "Compression Failed" }
+    private var automaticPreparationTitle: String {
+        if workflowMode == .extraction, isInspectingExtractionArchive {
+            return "Checking archive…"
+        }
+
+        return operationKind == .extract ? "Preparing extraction…" : "Preparing archive…"
+    }
+    private var extractionDestinationURL: URL {
+        extractionDirectoryURL ?? resolvedOutputDirectory(for: url)
+    }
+
+    private func retryCurrentOperation() {
+        completionState = .idle
+        currentStep = .files
+        extractionPasswordMessage = nil
+
+        guard workflowMode == .extraction else { return }
+        didPrepareExtractionFlow = false
+        prepareExtractionFlowIfNeeded()
+    }
 
     private var saveShortcut: ShortcutBinding {
         ShortcutBinding(
@@ -681,6 +954,19 @@ struct ConfigurationView: View {
         }
     }
 
+    private func revealOutput(_ url: URL) {
+        NSWorkspace.shared.activateFileViewerSelecting([url])
+    }
+
+    private func secondaryCompletionAction(_ url: URL) {
+        switch operationKind {
+        case .extract:
+            NSWorkspace.shared.open(url)
+        case .compress:
+            shareArchive(url: url)
+        }
+    }
+
     private func goToNextStep() {
         guard case .idle = completionState else { return }
         guard currentStep != .encryption else { return }
@@ -694,6 +980,8 @@ struct ConfigurationView: View {
     private func setupKeyMonitor() {
         guard keyMonitor == nil else { return }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            guard workflowMode == .compression else { return event }
+
             // Return (36) or Keypad Enter (76)
             if event.keyCode == 36 || event.keyCode == 76 {
                 if currentStep == .encryption {
@@ -732,7 +1020,7 @@ struct ConfigurationView: View {
 
     private func startArchiving() {
         guard canCompress else { return }
-        withAnimation(.easeInOut(duration: 0.3)) { completionState = .archiving; progress = 0 }
+        withAnimation(.easeInOut(duration: 0.3)) { completionState = .processing; progress = 0 }
 
         activeArchiveTask = ArchiveEngine.shared.compress(
             url: url, format: format, password: encrypt ? password : "",
@@ -753,6 +1041,87 @@ struct ConfigurationView: View {
                     }
                 }
                 activeArchiveTask = nil
+            }
+        }
+    }
+
+    private func prepareExtractionFlowIfNeeded() {
+        guard !didPrepareExtractionFlow else { return }
+        guard workflowMode == .extraction else { return }
+
+        didPrepareExtractionFlow = true
+        isInspectingExtractionArchive = true
+        extractionRequiresPassword = false
+        extractionPasswordMessage = nil
+
+        let sourceAccessing = url.startAccessingSecurityScopedResource()
+        ArchiveEngine.shared.inspectArchive(archiveURL: url) { result in
+            if sourceAccessing { url.stopAccessingSecurityScopedResource() }
+
+            isInspectingExtractionArchive = false
+
+            switch result {
+            case .success(let inspection):
+                extractionRequiresPassword = inspection.requiresPassword
+                if inspection.requiresPassword {
+                    completionState = .idle
+                } else {
+                    startExtraction()
+                }
+            case .failure(let error):
+                completionState = .failed(error.localizedDescription)
+            }
+        }
+    }
+
+    private func startExtraction() {
+        guard !extractionRequiresPassword || !password.isEmpty else { return }
+        extractionPasswordMessage = nil
+        withAnimation(.easeInOut(duration: 0.3)) { completionState = .processing; progress = 0 }
+
+        let sourceAccessing = url.startAccessingSecurityScopedResource()
+        let destinationDirectory = extractionDestinationURL
+        let destinationAccessing = destinationDirectory.startAccessingSecurityScopedResource()
+
+        do {
+            let extractionURL = try makeExtractionDestination(for: url, in: destinationDirectory)
+
+            activeArchiveTask = ArchiveEngine.shared.extract(
+                archiveURL: url,
+                destinationURL: extractionURL,
+                password: password
+            ) { value in
+                progress = value
+            } completion: { result in
+                defer {
+                    if sourceAccessing { url.stopAccessingSecurityScopedResource() }
+                    if destinationAccessing { destinationDirectory.stopAccessingSecurityScopedResource() }
+                }
+
+                withAnimation(.easeInOut(duration: 0.4)) {
+                    switch result {
+                    case .success(let outURL):
+                        completionState = .done(outURL)
+                    case .failure(let err):
+                        let nsError = err as NSError
+                        if nsError.code == ArchiveEngine.ErrorCode.cancelled {
+                            completionState = .idle
+                        } else if ArchiveEngine.shared.isPasswordError(err) {
+                            extractionRequiresPassword = true
+                            extractionPasswordMessage = err.localizedDescription
+                            completionState = .idle
+                        } else {
+                            completionState = .failed(err.localizedDescription)
+                        }
+                    }
+                    activeArchiveTask = nil
+                }
+            }
+        } catch {
+            if sourceAccessing { url.stopAccessingSecurityScopedResource() }
+            if destinationAccessing { destinationDirectory.stopAccessingSecurityScopedResource() }
+            withAnimation(.easeInOut(duration: 0.3)) {
+                completionState = .failed(error.localizedDescription)
             }
         }
     }
@@ -930,6 +1299,60 @@ struct ConfigurationView: View {
             var u = node; u.isIncluded = included
             if !u.children.isEmpty { u.children = setAllIncluded(u.children, included: included) }
             return u
+        }
+    }
+
+    private func resolvedOutputDirectory(for sourceURL: URL) -> URL {
+        if let bookmarkedDirectory = SaveLocationBookmark.resolve(defaultSaveLocationBookmark) {
+            return bookmarkedDirectory
+        }
+
+        return sourceURL.deletingLastPathComponent()
+    }
+
+    private func makeExtractionDestination(for archiveURL: URL, in directoryURL: URL) throws -> URL {
+        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        let baseName = ArchiveFileClassifier.extractionFolderName(for: archiveURL)
+        let uniqueDirectory = uniqueItemURL(in: directoryURL, baseName: baseName, pathExtension: nil)
+        try FileManager.default.createDirectory(at: uniqueDirectory, withIntermediateDirectories: true)
+        return uniqueDirectory
+    }
+
+    private func persistAutomaticArchive(_ tempURL: URL, sourceURL: URL, format: String, destinationDirectory: URL) throws -> URL {
+        try FileManager.default.createDirectory(at: destinationDirectory, withIntermediateDirectories: true)
+        let finalURL = uniqueItemURL(
+            in: destinationDirectory,
+            baseName: sourceURL.lastPathComponent,
+            pathExtension: format
+        )
+
+        if FileManager.default.fileExists(atPath: finalURL.path) {
+            try FileManager.default.removeItem(at: finalURL)
+        }
+
+        try FileManager.default.copyItem(at: tempURL, to: finalURL)
+        try? FileManager.default.removeItem(at: tempURL)
+        return finalURL
+    }
+
+    private func uniqueItemURL(in directoryURL: URL, baseName: String, pathExtension: String?) -> URL {
+        let fm = FileManager.default
+        var candidateIndex = 0
+
+        while true {
+            let suffix = candidateIndex == 0 ? "" : " \(candidateIndex + 1)"
+            let candidateName = "\(baseName)\(suffix)"
+            var candidateURL = directoryURL.appendingPathComponent(candidateName, isDirectory: pathExtension == nil)
+
+            if let pathExtension {
+                candidateURL = candidateURL.appendingPathExtension(pathExtension)
+            }
+
+            if !fm.fileExists(atPath: candidateURL.path) {
+                return candidateURL
+            }
+
+            candidateIndex += 1
         }
     }
 

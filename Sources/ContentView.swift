@@ -5,19 +5,20 @@ struct ContentView: View {
     let initialURL: URL?
 
     @State private var selectedURL: URL?
+    @State private var extractionDirectoryURL: URL?
+    @State private var hasHandledInitialURL = false
     @State private var isDropTargeted = false
     @State private var iconBreathing = false
     @State private var isHoveringDropZone = false
+    @AppStorage(PreferenceKeys.defaultSaveLocationBookmark) private var defaultSaveLocationBookmark = Data()
 
     var body: some View {
         ZStack {
             Theme.bg.ignoresSafeArea()
 
             if let url = selectedURL {
-                ConfigurationView(url: url) {
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        selectedURL = nil
-                    }
+                ConfigurationView(url: url, extractionDirectoryURL: extractionDirectoryURL) {
+                    clearSelection()
                 }
                 .onDrop(of: [UTType.fileURL.identifier], isTargeted: $isDropTargeted, perform: handleDrop)
                 .transition(.opacity)
@@ -29,13 +30,20 @@ struct ContentView: View {
         .contentShape(Rectangle())
         .onTapGesture {
             if selectedURL == nil {
-                selectFile()
+                selectItem()
             }
         }
         .overlay(alignment: .topLeading) {
             if selectedURL == nil {
-                Button("", action: selectFile)
+                Button("", action: selectItem)
                     .keyboardShortcut("o", modifiers: .command)
+                    .frame(width: 0, height: 0)
+                    .opacity(0.001)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+
+                Button("", action: selectArchiveForExtraction)
+                    .keyboardShortcut("o", modifiers: [.command, .shift])
                     .frame(width: 0, height: 0)
                     .opacity(0.001)
                     .allowsHitTesting(false)
@@ -44,14 +52,15 @@ struct ContentView: View {
         }
         .onDrop(of: [UTType.fileURL.identifier], isTargeted: $isDropTargeted, perform: handleDrop)
         .onAppear {
-            if selectedURL == nil, let initialURL {
-                selectedURL = initialURL
-            }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .openArchiveInCurrentWindow)) { notification in
-            guard let url = notification.object as? URL else { return }
-            withAnimation(.easeInOut(duration: 0.25)) {
-                selectedURL = url
+            if !hasHandledInitialURL, selectedURL == nil, let initialURL {
+                hasHandledInitialURL = true
+
+                // External item windows need one turn of the run loop before presenting
+                // archive extraction panels; otherwise the destination picker can fail
+                // to appear while the new window is still becoming key.
+                DispatchQueue.main.async {
+                    handlePickedItem(initialURL)
+                }
             }
         }
         .animation(.easeInOut(duration: 0.3), value: selectedURL != nil)
@@ -98,13 +107,18 @@ struct ContentView: View {
 
             Spacer()
 
-            Button("Choose Item", action: selectFile)
-                .buttonStyle(GoldButtonStyle())
+            VStack(spacing: 10) {
+                Button("Choose Item", action: selectItem)
+                    .buttonStyle(GoldButtonStyle())
+
+                Button("Extract Archive…", action: selectArchiveForExtraction)
+                    .buttonStyle(SubtleButtonStyle())
+            }
                 .padding(.bottom, 32)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
-        .onTapGesture(perform: selectFile)
+        .onTapGesture(perform: selectItem)
         .onHover { hovering in
             isHoveringDropZone = hovering
         }
@@ -118,7 +132,7 @@ struct ContentView: View {
 
     // MARK: - Actions
 
-    private func selectFile() {
+    private func selectItem() {
         let panel = NSOpenPanel()
         panel.title = "Open file or folder"
         panel.prompt = "Open"
@@ -127,9 +141,72 @@ struct ContentView: View {
         panel.allowsMultipleSelection = false
 
         if panel.runModal() == .OK, let url = panel.url {
-            withAnimation(.easeInOut(duration: 0.25)) {
-                selectedURL = url
+            handlePickedItem(url)
+        }
+    }
+
+    private func selectArchiveForExtraction() {
+        let panel = NSOpenPanel()
+        panel.title = "Choose archive to extract"
+        panel.message = "Pick an archive, then choose where the extracted folder should be created."
+        panel.prompt = "Choose Archive"
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowsMultipleSelection = false
+        panel.allowedFileTypes = ArchiveFileClassifier.selectableArchiveExtensions
+
+        if panel.runModal() == .OK, let url = panel.url {
+            handlePickedItem(url, forceExtractionFlow: true)
+        }
+    }
+
+    private func handlePickedItem(_ url: URL, forceExtractionFlow: Bool = false) {
+        let shouldExtract = forceExtractionFlow || ArchiveFileClassifier.isArchive(url)
+
+        if shouldExtract {
+            guard let destinationDirectory = promptForExtractionDirectory(for: url) else { return }
+            presentSelection(url, extractionDirectoryURL: destinationDirectory)
+            return
+        }
+
+        presentSelection(url, extractionDirectoryURL: nil)
+    }
+
+    private func promptForExtractionDirectory(for archiveURL: URL) -> URL? {
+        let panel = NSOpenPanel()
+        panel.title = "Choose where to save extracted files"
+        panel.message = "Zipper will create a new folder for “\(ArchiveFileClassifier.extractionFolderName(for: archiveURL))”."
+        panel.prompt = "Extract Here"
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.canCreateDirectories = true
+        panel.allowsMultipleSelection = false
+
+        if let defaultDirectory = SaveLocationBookmark.resolve(defaultSaveLocationBookmark) {
+            let isAccessing = defaultDirectory.startAccessingSecurityScopedResource()
+            panel.directoryURL = defaultDirectory
+            if isAccessing {
+                defaultDirectory.stopAccessingSecurityScopedResource()
             }
+        } else {
+            panel.directoryURL = archiveURL.deletingLastPathComponent()
+        }
+
+        guard panel.runModal() == .OK, let directoryURL = panel.url else { return nil }
+        return directoryURL
+    }
+
+    private func presentSelection(_ url: URL, extractionDirectoryURL: URL?) {
+        withAnimation(.easeInOut(duration: 0.25)) {
+            self.extractionDirectoryURL = extractionDirectoryURL
+            selectedURL = url
+        }
+    }
+
+    private func clearSelection() {
+        withAnimation(.easeInOut(duration: 0.25)) {
+            extractionDirectoryURL = nil
+            selectedURL = nil
         }
     }
 
@@ -151,9 +228,7 @@ struct ContentView: View {
                 _ = provider.loadObject(ofClass: URL.self) { fallbackURL, _ in
                     guard let fallbackURL else { return }
                     DispatchQueue.main.async {
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            selectedURL = fallbackURL
-                        }
+                        handlePickedItem(fallbackURL)
                     }
                 }
                 return
@@ -162,9 +237,7 @@ struct ContentView: View {
             guard FileManager.default.fileExists(atPath: url.path) else { return }
 
             DispatchQueue.main.async {
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    selectedURL = url
-                }
+                handlePickedItem(url)
             }
         }
 

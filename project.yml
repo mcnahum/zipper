@@ -14,24 +14,18 @@ targets:
     settings:
       CODE_SIGN_IDENTITY: "-"
       ENABLE_HARDENED_RUNTIME: YES
-      INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
-      INFOPLIST_KEY_NSPrincipalClass: NSApplication
-      INFOPLIST_KEY_CFBundleDocumentTypes_0_CFBundleTypeName: Archive
-      INFOPLIST_KEY_CFBundleDocumentTypes_0_CFBundleTypeRole: Viewer
-      INFOPLIST_KEY_CFBundleDocumentTypes_0_LSHandlerRank: Owner
-      INFOPLIST_KEY_CFBundleDocumentTypes_0_LSItemContentTypes_0: public.zip-archive
-      INFOPLIST_KEY_CFBundleDocumentTypes_0_LSItemContentTypes_1: com.rarlab.rar-archive
-      INFOPLIST_KEY_CFBundleDocumentTypes_0_LSItemContentTypes_2: org.7-zip.7-zip-archive
-      INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace: YES
       ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-      GENERATE_INFOPLIST_FILE: YES
+      GENERATE_INFOPLIST_FILE: NO
+      INFOPLIST_FILE: Sources/Info.plist
       MACOSX_DEPLOYMENT_TARGET: "13.0"
       SWIFT_VERSION: 5.9
     preBuildScripts:
       - script: |
           mkdir -p "$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources"
-          cp "$SRCROOT/Sources/Resources/7zz" "$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/"
-          chmod +x "$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/7zz"
+          DEST="$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/7zz"
+          chmod u+w "$DEST" 2>/dev/null || true
+          rm -f "$DEST"
+          /usr/bin/install -m 755 "$SRCROOT/Sources/Resources/7zz" "$DEST"
         name: Copy 7zz
     entitlements:
       path: ZipperApp.entitlements
