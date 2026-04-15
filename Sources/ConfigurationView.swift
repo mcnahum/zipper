@@ -314,8 +314,8 @@ struct ConfigurationView: View {
 
     private var backLabel: String {
         switch completionState {
-        case .done, .failed:  return "Start Over"
-        case .idle where currentStep == .files: return "Start Over"
+        case .done, .failed:  return "Discard"
+        case .idle where currentStep == .files: return "Back"
         default: return "Back"
         }
     }
@@ -583,7 +583,7 @@ struct ConfigurationView: View {
 
     private var bottomBar: some View {
         HStack {
-            Button(currentStep == .files ? "Start Over" : "Back") {
+            Button("Back") {
                 if currentStep == .files { onCancel() }
                 else { withAnimation(.easeInOut(duration: 0.22)) { currentStep = Step(rawValue: currentStep.rawValue - 1) ?? .files } }
             }
