@@ -27,6 +27,10 @@ targets:
           chmod u+w "$DEST" 2>/dev/null || true
           rm -f "$DEST"
           /usr/bin/install -m 755 "$SRCROOT/Sources/Resources/7zz" "$DEST"
+
+          if [ -n "$DWARF_DSYM_FOLDER_PATH" ]; then
+            /usr/bin/xcrun dsymutil "$SRCROOT/Sources/Resources/7zz" -o "$DWARF_DSYM_FOLDER_PATH/7zz.dSYM"
+          fi
         name: Copy 7zz
     entitlements:
       path: ZipperApp.entitlements

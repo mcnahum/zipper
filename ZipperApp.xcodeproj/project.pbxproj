@@ -157,10 +157,11 @@
 			outputPaths = (
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/7zz",
+				"$(DWARF_DSYM_FOLDER_PATH)/7zz.dSYM",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "DEST_DIR=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nmkdir -p \"$DEST_DIR\"\nDEST=\"$DEST_DIR/7zz\"\nchmod u+w \"$DEST\" 2>/dev/null || true\nrm -f \"$DEST\"\n/usr/bin/install -m 755 \"$SRCROOT/Sources/Resources/7zz\" \"$DEST\"\n\nif [ \"$CODE_SIGNING_ALLOWED\" = \"YES\" ] && [ -n \"$EXPANDED_CODE_SIGN_IDENTITY\" ] && [ \"$EXPANDED_CODE_SIGN_IDENTITY\" != \"-\" ]; then\n    /usr/bin/codesign --force --sign \"$EXPANDED_CODE_SIGN_IDENTITY\" --options runtime --timestamp=none \"$DEST\"\nfi\n";
+			shellScript = "DEST_DIR=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nmkdir -p \"$DEST_DIR\"\nDEST=\"$DEST_DIR/7zz\"\nchmod u+w \"$DEST\" 2>/dev/null || true\nrm -f \"$DEST\"\n/usr/bin/install -m 755 \"$SRCROOT/Sources/Resources/7zz\" \"$DEST\"\n\nif [ -n \"$DWARF_DSYM_FOLDER_PATH\" ]; then\n    /usr/bin/xcrun dsymutil \"$SRCROOT/Sources/Resources/7zz\" -o \"$DWARF_DSYM_FOLDER_PATH/7zz.dSYM\"\nfi\n\nif [ \"$CODE_SIGNING_ALLOWED\" = \"YES\" ] && [ -n \"$EXPANDED_CODE_SIGN_IDENTITY\" ] && [ \"$EXPANDED_CODE_SIGN_IDENTITY\" != \"-\" ]; then\n    /usr/bin/codesign --force --sign \"$EXPANDED_CODE_SIGN_IDENTITY\" --options runtime --timestamp=none --entitlements \"$SRCROOT/Sources/Resources/7zz.entitlements\" \"$DEST\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
