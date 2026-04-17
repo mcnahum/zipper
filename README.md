@@ -1,19 +1,23 @@
-# Zipper for macOS
-A simple, elegant and powerful archival utility for macOS, built with SwiftUI.
+# PowerUnRar for macOS
 
-<img width="976" height="628" alt="578852612-4fe80a1c-6f44-4ebf-a000-c85388268388" src="https://github.com/user-attachments/assets/60beff8d-9d67-4858-bb01-f96a9b23c17f" />
+PowerUnRar is a macOS archive extractor rebuilt on top of the open-source [mcnahum/zipper](https://github.com/mcnahum/zipper) project. It keeps the bundled `7zz` extraction engine from that codebase, but replaces the original compression-focused UI with a dedicated sequential RAR extraction workflow.
 
 ## Features
-- exclude files and folders from your archives
-- encrypt your archives
-- export as zip / 7z archives 
-- extract zip, rar, 7z
 
-## A Quick Demo
-<img width="800" height="491" alt="CleanShot 2026-04-16 at 02 20 13" src="https://github.com/user-attachments/assets/c80c7ce2-f81a-4982-a7ad-ed4c4a960e96" />
+- scans a dedicated folder, defaulting to `/Volumes/BD`
+- lists only archive files in that folder, not in subfolders
+- groups multi-part RAR sets into a single queue item
+- lets you select the archive sets to process
+- extracts archives one by one into automatically created destination folders
+- keeps a live queue with running progress, current file details, and green/red completion states
+- produces a final extraction report after the queue finishes
+- supports light, dark, and auto appearance modes
 
-## Installation
-You can install Zipper easily via Homebrew:
+## Building
+
 ```bash
-brew install --cask kshah00/tap/zipper
+xcodegen generate
+open PowerUnRar.xcodeproj
 ```
+
+The build number is incremented automatically during target builds through `Scripts/increment_build_number.sh`.

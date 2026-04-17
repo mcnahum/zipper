@@ -1,60 +1,43 @@
 import SwiftUI
 
 enum Theme {
-    static let bg = Color(red: 0.12, green: 0.12, blue: 0.13)
-    static let surface = Color.white.opacity(0.05)
-    static let surfaceActive = Color.white.opacity(0.09)
-    static let accent = Color(red: 0.90, green: 0.76, blue: 0.18)
-    static let textPrimary = Color.white.opacity(0.90)
-    static let textSecondary = Color.white.opacity(0.45)
-    static let textMuted = Color.white.opacity(0.22)
-    static let border = Color.white.opacity(0.08)
+    static let accent = Color(red: 0.14, green: 0.46, blue: 0.95)
+    static let success = Color(red: 0.12, green: 0.63, blue: 0.27)
+    static let failure = Color(red: 0.82, green: 0.22, blue: 0.22)
+    static let border = Color.primary.opacity(0.10)
+    static let panelBackground = Color.primary.opacity(0.04)
 }
 
-struct GoldButtonStyle: ButtonStyle {
-    var fullWidth = false
-
+struct AppPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 13, weight: .semibold))
-            .foregroundStyle(.black)
-            .padding(.horizontal, fullWidth ? 0 : 28)
-            .padding(.vertical, 11)
-            .frame(maxWidth: fullWidth ? .infinity : nil)
-            .background(Theme.accent, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .opacity(configuration.isPressed ? 0.82 : 1.0)
-            .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .foregroundStyle(.white)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Theme.accent.opacity(configuration.isPressed ? 0.8 : 1.0))
+            )
     }
 }
 
-struct SubtleButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(Theme.textSecondary)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(Theme.surface, in: Capsule())
-            .opacity(configuration.isPressed ? 0.7 : 1.0)
-    }
-}
-
-struct SecondaryButtonStyle: ButtonStyle {
-    var fullWidth = false
+struct AppSecondaryButtonStyle: ButtonStyle {
+    var compact = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 13, weight: .semibold))
-            .foregroundStyle(Theme.textPrimary)
-            .padding(.horizontal, fullWidth ? 0 : 28)
-            .padding(.vertical, 11)
-            .frame(maxWidth: fullWidth ? .infinity : nil)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .font(.system(size: compact ? 12 : 13, weight: .medium))
+            .padding(.horizontal, compact ? 10 : 14)
+            .padding(.vertical, compact ? 6 : 9)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Theme.panelBackground)
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .stroke(Theme.border, lineWidth: 1)
             )
-            .opacity(configuration.isPressed ? 0.82 : 1.0)
-            .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
+            .opacity(configuration.isPressed ? 0.75 : 1.0)
     }
 }

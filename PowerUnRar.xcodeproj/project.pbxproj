@@ -1,0 +1,412 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0D60F984ABCA0C83879E9C14 /* ZipperApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 507EB31B669DDD37E36256CF /* ZipperApp.swift */; };
+		1165CB374CF8FA6AB77A634B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4162AF0E4848DA95890A4252 /* Assets.xcassets */; };
+		11CEA980353BC157C97FD0B1 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D1952A19F304EBB8475290C /* Theme.swift */; };
+		8476B587F86556CF107B84F2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A233B34C1976D9C1B1B9DEF /* ContentView.swift */; };
+		A177F638D2A48167E27E9E02 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9718EFDC152C56EC2B317C /* PreferencesView.swift */; };
+		B97BB98A6FEE52581D302352 /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3D41BC1D30907B9D5C24577 /* AppPreferences.swift */; };
+		BC779776C1C5478D0E5F16C4 /* ArchiveEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B5552EAFA0FA7D03B46450F /* ArchiveEngine.swift */; };
+		BCD297AF521D2B2550CF742F /* FolderExtractionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4768C3181A4F88EFE61A9F /* FolderExtractionViewModel.swift */; };
+		DE9805EAC22942A917DB0112 /* AppEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFC8B147D7B098356E157028 /* AppEvents.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2B5552EAFA0FA7D03B46450F /* ArchiveEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveEngine.swift; sourceTree = "<group>"; };
+		2D1952A19F304EBB8475290C /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		32C8CE3B257942CFDEF02D3F /* Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Common.xcconfig; sourceTree = "<group>"; };
+		4162AF0E4848DA95890A4252 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		507EB31B669DDD37E36256CF /* ZipperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipperApp.swift; sourceTree = "<group>"; };
+		5A233B34C1976D9C1B1B9DEF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		6527A08DF560AEB317D8D288 /* 7zz */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = 7zz; sourceTree = "<group>"; };
+		A3D41BC1D30907B9D5C24577 /* AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
+		DD9718EFDC152C56EC2B317C /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
+		ED4768C3181A4F88EFE61A9F /* FolderExtractionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderExtractionViewModel.swift; sourceTree = "<group>"; };
+		F51B4738B186D29D73D758C4 /* PowerUnRar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PowerUnRar.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FFC8B147D7B098356E157028 /* AppEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEvents.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		083596515B28CF950D4FFF32 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F51B4738B186D29D73D758C4 /* PowerUnRar.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1A0E1E48FEDEFEDDE6767BA9 = {
+			isa = PBXGroup;
+			children = (
+				C106DFF17748568931F1527D /* Config */,
+				99117335CB56AE3C99C21DFA /* Sources */,
+				083596515B28CF950D4FFF32 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		8493A26822F1AF899AE84F6A /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				6527A08DF560AEB317D8D288 /* 7zz */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		99117335CB56AE3C99C21DFA /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				FFC8B147D7B098356E157028 /* AppEvents.swift */,
+				A3D41BC1D30907B9D5C24577 /* AppPreferences.swift */,
+				2B5552EAFA0FA7D03B46450F /* ArchiveEngine.swift */,
+				4162AF0E4848DA95890A4252 /* Assets.xcassets */,
+				5A233B34C1976D9C1B1B9DEF /* ContentView.swift */,
+				ED4768C3181A4F88EFE61A9F /* FolderExtractionViewModel.swift */,
+				DD9718EFDC152C56EC2B317C /* PreferencesView.swift */,
+				2D1952A19F304EBB8475290C /* Theme.swift */,
+				507EB31B669DDD37E36256CF /* ZipperApp.swift */,
+				8493A26822F1AF899AE84F6A /* Resources */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		C106DFF17748568931F1527D /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				32C8CE3B257942CFDEF02D3F /* Common.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		73F38448080E2EED336DF205 /* PowerUnRar */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E339CB170D2A55FF060CC2B5 /* Build configuration list for PBXNativeTarget "PowerUnRar" */;
+			buildPhases = (
+				BB870947AD443D739F1AECCC /* Increment Build Number */,
+				DE466696A3842C59FE2F60E8 /* Copy 7zz */,
+				A384812A4602FDDC38F18D94 /* Sources */,
+				7244D1CF24ABABB92A1330A8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PowerUnRar;
+			packageProductDependencies = (
+			);
+			productName = PowerUnRar;
+			productReference = F51B4738B186D29D73D758C4 /* PowerUnRar.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2117DCAC587544D256023D5F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+			};
+			buildConfigurationList = 646BE29267008DE29D48AC56 /* Build configuration list for PBXProject "PowerUnRar" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 1A0E1E48FEDEFEDDE6767BA9;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 083596515B28CF950D4FFF32 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				73F38448080E2EED336DF205 /* PowerUnRar */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7244D1CF24ABABB92A1330A8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1165CB374CF8FA6AB77A634B /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BB870947AD443D739F1AECCC /* Increment Build Number */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Increment Build Number";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Scripts/increment_build_number.sh\"\n";
+		};
+		DE466696A3842C59FE2F60E8 /* Copy 7zz */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy 7zz";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "mkdir -p \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources\"\nDEST=\"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/7zz\"\nchmod u+w \"$DEST\" 2>/dev/null || true\nrm -f \"$DEST\"\n/usr/bin/install -m 755 \"$SRCROOT/Sources/Resources/7zz\" \"$DEST\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A384812A4602FDDC38F18D94 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DE9805EAC22942A917DB0112 /* AppEvents.swift in Sources */,
+				B97BB98A6FEE52581D302352 /* AppPreferences.swift in Sources */,
+				BC779776C1C5478D0E5F16C4 /* ArchiveEngine.swift in Sources */,
+				8476B587F86556CF107B84F2 /* ContentView.swift in Sources */,
+				BCD297AF521D2B2550CF742F /* FolderExtractionViewModel.swift in Sources */,
+				A177F638D2A48167E27E9E02 /* PreferencesView.swift in Sources */,
+				11CEA980353BC157C97FD0B1 /* Theme.swift in Sources */,
+				0D60F984ABCA0C83879E9C14 /* ZipperApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1F56F075A9DA630C938F4B56 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 32C8CE3B257942CFDEF02D3F /* Common.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = D5NT2H3J72;
+				ENABLE_APP_SANDBOX = NO;
+				INFOPLIST_KEY_CFBundleDisplayName = PowerUnRar;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.e-nahum.PowerUnRar";
+				PRODUCT_NAME = PowerUnRar;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				SUPPORTS_MACCATALYST = NO;
+			};
+			name = Release;
+		};
+		5FDDC6E4895859A66ECD5B7B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = "$(BUILD_NUMBER)";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = PowerUnRar;
+				INFOPLIST_KEY_CFBundleName = PowerUnRar;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		EC818AE68F5FC88726A8111A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 32C8CE3B257942CFDEF02D3F /* Common.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = D5NT2H3J72;
+				ENABLE_APP_SANDBOX = NO;
+				INFOPLIST_KEY_CFBundleDisplayName = PowerUnRar;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.e-nahum.PowerUnRar";
+				PRODUCT_NAME = PowerUnRar;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				SUPPORTS_MACCATALYST = NO;
+			};
+			name = Debug;
+		};
+		F44142E4A75D3FF602CCAB1A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = "$(BUILD_NUMBER)";
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = PowerUnRar;
+				INFOPLIST_KEY_CFBundleName = PowerUnRar;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		646BE29267008DE29D48AC56 /* Build configuration list for PBXProject "PowerUnRar" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F44142E4A75D3FF602CCAB1A /* Debug */,
+				5FDDC6E4895859A66ECD5B7B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E339CB170D2A55FF060CC2B5 /* Build configuration list for PBXNativeTarget "PowerUnRar" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EC818AE68F5FC88726A8111A /* Debug */,
+				1F56F075A9DA630C938F4B56 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2117DCAC587544D256023D5F /* Project object */;
+}

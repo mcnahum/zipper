@@ -1,39 +1,60 @@
-name: ZipperApp
+name: PowerUnRar
 options:
-  bundleIdPrefix: com.example
+  bundleIdPrefix: net.e-nahum
   developmentRegion: en
-  deploymentTarget:
-    macOS: "13.0"
+  createIntermediateGroups: true
+configs:
+  Debug: debug
+  Release: release
+settings:
+  base:
+    SWIFT_VERSION: 6.0
+    GENERATE_INFOPLIST_FILE: YES
+    INFOPLIST_KEY_CFBundleDisplayName: PowerUnRar
+    INFOPLIST_KEY_CFBundleName: PowerUnRar
+    INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+    MARKETING_VERSION: 1.0
+    CURRENT_PROJECT_VERSION: $(BUILD_NUMBER)
+    VERSIONING_SYSTEM: apple-generic
 targets:
-  ZipperApp:
+  PowerUnRar:
     type: application
     platform: macOS
+    deploymentTarget: "26.0"
+    configFiles:
+      Debug: Config/Common.xcconfig
+      Release: Config/Common.xcconfig
     sources:
       - path: Sources
-        compilerFlags: -Wall
+        excludes:
+          - Resources/7zz.entitlements
     settings:
-      CODE_SIGN_IDENTITY: "-"
-      ENABLE_HARDENED_RUNTIME: YES
-      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-      GENERATE_INFOPLIST_FILE: NO
-      INFOPLIST_FILE: Sources/Info.plist
-      MACOSX_DEPLOYMENT_TARGET: "13.0"
-      PRODUCT_NAME: Zipper
-      SWIFT_VERSION: 5.9
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: net.e-nahum.PowerUnRar
+        PRODUCT_NAME: PowerUnRar
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        SUPPORTS_MACCATALYST: NO
+        ENABLE_APP_SANDBOX: NO
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: Apple Development
+        DEVELOPMENT_TEAM: D5NT2H3J72
     preBuildScripts:
-      - script: |
+      - name: Increment Build Number
+        script: |
+          "$SRCROOT/Scripts/increment_build_number.sh"
+      - name: Copy 7zz
+        script: |
           mkdir -p "$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources"
           DEST="$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/7zz"
           chmod u+w "$DEST" 2>/dev/null || true
           rm -f "$DEST"
           /usr/bin/install -m 755 "$SRCROOT/Sources/Resources/7zz" "$DEST"
-
-          if [ -n "$DWARF_DSYM_FOLDER_PATH" ]; then
-            /usr/bin/xcrun dsymutil "$SRCROOT/Sources/Resources/7zz" -o "$DWARF_DSYM_FOLDER_PATH/7zz.dSYM"
-          fi
-        name: Copy 7zz
-    entitlements:
-      path: ZipperApp.entitlements
-      properties:
-        com.apple.security.app-sandbox: true
-        com.apple.security.files.user-selected.read-write: true
+schemes:
+  PowerUnRar:
+    build:
+      targets:
+        PowerUnRar: all
+    run:
+      config: Debug
+    archive:
+      config: Release
