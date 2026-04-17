@@ -22,6 +22,7 @@ final class FolderExtractionViewModel: ObservableObject {
         var status: Status
         var detail: String
         var fractionCompleted: Double
+        var originalsDeleted: Bool
     }
 
     let defaultFolderPath = "/Volumes/BD"
@@ -34,6 +35,8 @@ final class FolderExtractionViewModel: ObservableObject {
     @Published var progressMessage = "Choose a folder and refresh the archive list."
     @Published var lastReport: String?
     @Published var userMessage: UserMessage?
+    @Published private(set) var successfulArchiveIDs: Set<String> = []
+    @Published private(set) var failedArchiveIDs: Set<String> = []
     @Published var appearanceMode: AppearanceMode {
         didSet {
             UserDefaults.standard.set(appearanceMode.rawValue, forKey: PreferenceKeys.appearanceMode)
@@ -41,6 +44,7 @@ final class FolderExtractionViewModel: ObservableObject {
     }
 
     private var activeTask: ArchiveTask?
+    private var knownArchivesByID: [String: ArchiveItem] = [:]
 
     init() {
         let savedPath = UserDefaults.standard.string(forKey: PreferenceKeys.workingFolderPath)
@@ -64,6 +68,24 @@ final class FolderExtractionViewModel: ObservableObject {
     var allSelectableArchivesSelected: Bool {
         let selectable = Set(archives.filter(\.canExtract).map(\.id))
         return !selectable.isEmpty && selectable.isSubset(of: selectedIDs)
+    }
+
+    var successfulArchiveSetCount: Int {
+        successfulArchiveIDs.count
+    }
+
+    var successfulOriginalFileCount: Int {
+        successfulArchiveIDs.reduce(into: 0) { total, archiveID in
+            total += currentArchive(for: archiveID)?.relatedPartURLs.count ?? 0
+        }
+    }
+
+    var canDeleteSuccessfulArchives: Bool {
+        !successfulArchiveIDs.isEmpty
+    }
+
+    var canRetryFailedArchives: Bool {
+        !failedArchiveIDs.isEmpty
     }
 
     func isSelected(_ archive: ArchiveItem) -> Bool {
@@ -113,6 +135,10 @@ final class FolderExtractionViewModel: ObservableObject {
         do {
             let refreshedArchives = try FolderArchiveScanner.scan(in: workingFolderURL)
             archives = refreshedArchives
+            knownArchivesByID.merge(
+                Dictionary(uniqueKeysWithValues: refreshedArchives.map { ($0.id, $0) }),
+                uniquingKeysWith: { _, new in new }
+            )
 
             let selectableIDs = Set(refreshedArchives.filter(\.canExtract).map(\.id))
             if selectedIDs.isEmpty {
@@ -129,6 +155,9 @@ final class FolderExtractionViewModel: ObservableObject {
             } else {
                 progressMessage = "Found \(refreshedArchives.count) archive set(s) in \(workingFolderURL.lastPathComponent)."
             }
+
+            successfulArchiveIDs = successfulArchiveIDs.intersection(Set(refreshedArchives.map(\.id)))
+            failedArchiveIDs = failedArchiveIDs.intersection(Set(refreshedArchives.map(\.id)))
         } catch {
             archives = []
             selectedIDs = []
@@ -138,27 +167,114 @@ final class FolderExtractionViewModel: ObservableObject {
     }
 
     func startExtraction() {
-        guard !isExtracting else { return }
-
         let queue = archives.filter { selectedIDs.contains($0.id) && $0.canExtract }
+        beginProcessing(queue, replaceJobs: true)
+    }
+
+    func retryFailedArchives() {
+        let queue = archives.filter { failedArchiveIDs.contains($0.id) && $0.canExtract }
+        beginProcessing(queue, replaceJobs: false)
+    }
+
+    func retryArchive(_ archiveID: String) {
+        guard let archive = archives.first(where: { $0.id == archiveID && $0.canExtract }) else {
+            userMessage = UserMessage(
+                text: "That archive is no longer available in the working folder.",
+                isError: true
+            )
+            return
+        }
+
+        beginProcessing([archive], replaceJobs: false)
+    }
+
+    func deleteSuccessfulArchives() {
+        guard !isExtracting else { return }
+        guard canDeleteSuccessfulArchives else { return }
+
+        let archiveIDs = successfulArchiveIDs
+        let archiveItems = archiveIDs.compactMap { currentArchive(for: $0) }
+
+        guard !archiveItems.isEmpty else {
+            userMessage = UserMessage(
+                text: "No extracted archives are available to delete anymore.",
+                isError: true
+            )
+            successfulArchiveIDs = []
+            return
+        }
+
+        let fileManager = FileManager.default
+        var deletedFileCount = 0
+        var failureMessages: [String] = []
+        var fullyDeletedArchiveIDs = Set<String>()
+
+        for archive in archiveItems {
+            var archiveDeletedSuccessfully = true
+
+            for url in archive.relatedPartURLs {
+                guard fileManager.fileExists(atPath: url.path) else { continue }
+
+                do {
+                    try fileManager.removeItem(at: url)
+                    deletedFileCount += 1
+                } catch {
+                    archiveDeletedSuccessfully = false
+                    failureMessages.append("\(url.lastPathComponent): \(error.localizedDescription)")
+                }
+            }
+
+            if archiveDeletedSuccessfully {
+                fullyDeletedArchiveIDs.insert(archive.id)
+                updateJobDetail(
+                    archiveID: archive.id,
+                    appendedText: "Original archive files deleted."
+                )
+            }
+        }
+
+        successfulArchiveIDs.subtract(fullyDeletedArchiveIDs)
+        selectedIDs.subtract(fullyDeletedArchiveIDs)
+        refreshArchives()
+
+        if failureMessages.isEmpty {
+            userMessage = UserMessage(
+                text: "Deleted \(deletedFileCount) original archive file(s) from successful extractions only.",
+                isError: false
+            )
+        } else {
+            userMessage = UserMessage(
+                text: "Deleted \(deletedFileCount) successful archive file(s), but some selected originals could not be removed.",
+                isError: true
+            )
+            lastReport = failureMessages.joined(separator: "\n")
+        }
+    }
+
+    private func beginProcessing(_ queue: [ArchiveItem], replaceJobs: Bool) {
+        guard !isExtracting else { return }
         guard !queue.isEmpty else {
             userMessage = UserMessage(text: "Select at least one extractable archive.", isError: true)
             return
         }
 
         lastReport = nil
-        jobs = queue.map {
-            ExtractionJob(
-                id: $0.id,
-                archiveName: $0.fileName,
-                status: .pending,
-                detail: $0.detailText,
-                fractionCompleted: 0
-            )
+        userMessage = nil
+
+        if replaceJobs {
+            jobs = queue.map { job(for: $0) }
+        } else {
+            for archive in queue {
+                if let index = jobs.firstIndex(where: { $0.id == archive.id }) {
+                    jobs[index] = job(for: archive)
+                } else {
+                    jobs.append(job(for: archive))
+                }
+            }
         }
+
         isExtracting = true
         progressMessage = "Preparing extraction queue..."
-        userMessage = nil
 
         Task {
             await processQueue(queue)
@@ -200,9 +316,13 @@ final class FolderExtractionViewModel: ObservableObject {
                     successDetail = "Done."
                 }
 
+                successfulArchiveIDs.insert(archive.id)
+                failedArchiveIDs.remove(archive.id)
                 markJob(archiveID: archive.id, status: .succeeded, detail: successDetail, fraction: 1.0)
             } catch {
                 failureMessages.append("\(archive.fileName): \(error.localizedDescription)")
+                failedArchiveIDs.insert(archive.id)
+                successfulArchiveIDs.remove(archive.id)
                 markJob(
                     archiveID: archive.id,
                     status: .failed,
@@ -333,6 +453,21 @@ final class FolderExtractionViewModel: ObservableObject {
         jobs.first(where: { $0.id == archiveID })?.fractionCompleted ?? 0
     }
 
+    private func currentArchive(for archiveID: String) -> ArchiveItem? {
+        archives.first(where: { $0.id == archiveID }) ?? knownArchivesByID[archiveID]
+    }
+
+    private func job(for archive: ArchiveItem) -> ExtractionJob {
+        ExtractionJob(
+            id: archive.id,
+            archiveName: archive.fileName,
+            status: .pending,
+            detail: archive.detailText,
+            fractionCompleted: 0,
+            originalsDeleted: false
+        )
+    }
+
     private func markJob(
         archiveID: String,
         status: ExtractionJob.Status,
@@ -343,6 +478,22 @@ final class FolderExtractionViewModel: ObservableObject {
         jobs[index].status = status
         jobs[index].detail = detail
         jobs[index].fractionCompleted = min(max(fraction, 0), 1)
+
+        if status != .succeeded {
+            jobs[index].originalsDeleted = false
+        }
+    }
+
+    private func updateJobDetail(archiveID: String, appendedText: String) {
+        guard let index = jobs.firstIndex(where: { $0.id == archiveID }) else { return }
+
+        if !jobs[index].detail.contains(appendedText) {
+            jobs[index].detail += " \(appendedText)"
+        }
+
+        if appendedText.localizedCaseInsensitiveContains("original archive files deleted") {
+            jobs[index].originalsDeleted = true
+        }
     }
 
     private func buildReport(

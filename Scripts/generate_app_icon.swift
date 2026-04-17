@@ -30,6 +30,23 @@ private let iconSlots: [(points: Int, scale: Int)] = [
     (512, 1), (512, 2),
 ]
 
+private struct PartPalette {
+    let top: CGColor
+    let bottom: CGColor
+    let line: CGColor
+    let badge: CGColor
+    let badgeText: NSColor
+}
+
+private struct PartLayout {
+    let center: CGPoint
+    let size: CGSize
+    let rotationDegrees: CGFloat
+    let palette: PartPalette
+    let partNumber: String
+    let isFront: Bool
+}
+
 let arguments = CommandLine.arguments
 let rootPath: String
 if let rootIndex = arguments.firstIndex(of: "--root"), arguments.indices.contains(rootIndex + 1) {
@@ -47,8 +64,8 @@ try FileManager.default.createDirectory(at: assetsURL, withIntermediateDirectori
 try FileManager.default.createDirectory(at: appIconURL, withIntermediateDirectories: true)
 try FileManager.default.createDirectory(at: designURL, withIntermediateDirectories: true)
 
-let previewURL = designURL.appendingPathComponent("zipper-logo-preview.png")
-let masterURL = designURL.appendingPathComponent("zipper-logo-master.png")
+let previewURL = designURL.appendingPathComponent("powerunrar-logo-preview.png")
+let masterURL = designURL.appendingPathComponent("powerunrar-logo-master.png")
 
 let assetCatalogContents = AssetContents(images: nil, info: .init(author: "xcode", version: 1))
 try writeJSON(assetCatalogContents, to: assetsURL.appendingPathComponent("Contents.json"))
@@ -118,24 +135,24 @@ func writePNG(for pixelSize: Int, to url: URL) throws {
 
 func renderIcon(in context: CGContext, size: CGFloat) {
     let canvas = CGRect(x: 0, y: 0, width: size, height: size)
-    let outerInset = size * 0.046
+    let outerInset = size * 0.045
     let outerRect = canvas.insetBy(dx: outerInset, dy: outerInset)
     let outerRadius = size * 0.22
+    let outerPath = roundedPath(outerRect, radius: outerRadius)
 
     context.clear(canvas)
-
-    let outerPath = roundedPath(outerRect, radius: outerRadius)
     context.saveGState()
     context.addPath(outerPath)
     context.clip()
+
     drawLinearGradient(
         in: context,
         colors: [
-            color(0.17, 0.18, 0.20),
-            color(0.10, 0.11, 0.12),
+            color(0.22, 0.23, 0.26),
+            color(0.10, 0.11, 0.13),
             color(0.05, 0.05, 0.06),
         ],
-        locations: [0.0, 0.45, 1.0],
+        locations: [0.0, 0.48, 1.0],
         start: CGPoint(x: outerRect.minX, y: outerRect.maxY),
         end: CGPoint(x: outerRect.maxX, y: outerRect.minY)
     )
@@ -143,17 +160,16 @@ func renderIcon(in context: CGContext, size: CGFloat) {
     drawRadialGradient(
         in: context,
         colors: [
-            color(0.98, 0.85, 0.32, alpha: 0.22),
-            color(0.98, 0.85, 0.32, alpha: 0.0),
+            color(0.95, 0.42, 0.18, alpha: 0.28),
+            color(0.95, 0.42, 0.18, alpha: 0.0),
         ],
         locations: [0.0, 1.0],
-        startCenter: CGPoint(x: outerRect.midX, y: outerRect.midY + size * 0.04),
+        startCenter: CGPoint(x: outerRect.midX, y: outerRect.midY + size * 0.05),
         startRadius: size * 0.01,
-        endCenter: CGPoint(x: outerRect.midX, y: outerRect.midY + size * 0.04),
+        endCenter: CGPoint(x: outerRect.midX, y: outerRect.midY + size * 0.05),
         endRadius: size * 0.34
     )
 
-    let mistRect = CGRect(x: outerRect.minX, y: outerRect.minY, width: outerRect.width, height: outerRect.height * 0.45)
     drawRadialGradient(
         in: context,
         colors: [
@@ -161,206 +177,252 @@ func renderIcon(in context: CGContext, size: CGFloat) {
             color(1.0, 1.0, 1.0, alpha: 0.0),
         ],
         locations: [0.0, 1.0],
-        startCenter: CGPoint(x: mistRect.minX + mistRect.width * 0.22, y: mistRect.maxY),
+        startCenter: CGPoint(x: outerRect.minX + outerRect.width * 0.26, y: outerRect.maxY),
         startRadius: size * 0.01,
-        endCenter: CGPoint(x: mistRect.minX + mistRect.width * 0.22, y: mistRect.maxY),
-        endRadius: size * 0.48
+        endCenter: CGPoint(x: outerRect.minX + outerRect.width * 0.26, y: outerRect.maxY),
+        endRadius: size * 0.42
     )
+
     context.restoreGState()
 
     context.addPath(outerPath)
     context.setLineWidth(size * 0.01)
+    context.setStrokeColor(color(1.0, 1.0, 1.0, alpha: 0.10))
+    context.strokePath()
+
+    let backPalette = PartPalette(
+        top: color(0.73, 0.35, 0.18),
+        bottom: color(0.50, 0.18, 0.08),
+        line: color(1.0, 0.88, 0.72, alpha: 0.18),
+        badge: color(0.18, 0.18, 0.20),
+        badgeText: NSColor(calibratedWhite: 0.96, alpha: 1.0)
+    )
+    let middlePalette = PartPalette(
+        top: color(0.97, 0.65, 0.23),
+        bottom: color(0.78, 0.38, 0.10),
+        line: color(1.0, 0.94, 0.78, alpha: 0.18),
+        badge: color(0.20, 0.20, 0.22),
+        badgeText: NSColor(calibratedWhite: 0.97, alpha: 1.0)
+    )
+    let frontPalette = PartPalette(
+        top: color(1.0, 0.88, 0.28),
+        bottom: color(0.88, 0.60, 0.08),
+        line: color(1.0, 0.98, 0.82, alpha: 0.22),
+        badge: color(0.17, 0.18, 0.20),
+        badgeText: NSColor(calibratedWhite: 0.98, alpha: 1.0)
+    )
+
+    let parts = [
+        PartLayout(
+            center: CGPoint(x: size * 0.38, y: size * 0.50),
+            size: CGSize(width: size * 0.27, height: size * 0.46),
+            rotationDegrees: -18,
+            palette: backPalette,
+            partNumber: "01",
+            isFront: false
+        ),
+        PartLayout(
+            center: CGPoint(x: size * 0.63, y: size * 0.51),
+            size: CGSize(width: size * 0.27, height: size * 0.46),
+            rotationDegrees: 16,
+            palette: middlePalette,
+            partNumber: "02",
+            isFront: false
+        ),
+        PartLayout(
+            center: CGPoint(x: size * 0.50, y: size * 0.47),
+            size: CGSize(width: size * 0.31, height: size * 0.52),
+            rotationDegrees: 0,
+            palette: frontPalette,
+            partNumber: "03",
+            isFront: true
+        ),
+    ]
+
+    for part in parts {
+        drawArchivePart(in: context, part: part, iconSize: size)
+    }
+
+}
+
+private func drawArchivePart(in context: CGContext, part: PartLayout, iconSize: CGFloat) {
+    context.saveGState()
+    context.translateBy(x: part.center.x, y: part.center.y)
+    context.rotate(by: part.rotationDegrees * .pi / 180)
+
+    let bodyRect = CGRect(
+        x: -part.size.width / 2,
+        y: -part.size.height / 2,
+        width: part.size.width,
+        height: part.size.height
+    )
+    let bodyRadius = part.size.width * 0.18
+    let bodyPath = roundedPath(bodyRect, radius: bodyRadius)
+
+    context.saveGState()
+    context.setShadow(offset: CGSize(width: 0, height: -iconSize * 0.014), blur: iconSize * 0.035, color: color(0.0, 0.0, 0.0, alpha: 0.33))
+    context.addPath(bodyPath)
+    context.clip()
+    drawLinearGradient(
+        in: context,
+        colors: [part.palette.top, part.palette.bottom],
+        locations: [0.0, 1.0],
+        start: CGPoint(x: bodyRect.minX, y: bodyRect.maxY),
+        end: CGPoint(x: bodyRect.maxX, y: bodyRect.minY)
+    )
+    context.restoreGState()
+
+    context.addPath(bodyPath)
+    context.setLineWidth(max(1.0, part.size.width * 0.028))
+    context.setStrokeColor(part.palette.line)
+    context.strokePath()
+
+    let handleRect = CGRect(
+        x: -part.size.width * 0.16,
+        y: bodyRect.maxY - part.size.height * 0.03,
+        width: part.size.width * 0.32,
+        height: part.size.height * 0.12
+    )
+    let handlePath = roundedPath(handleRect, radius: handleRect.height / 2)
+    context.addPath(handlePath)
+    context.setFillColor(color(1.0, 0.98, 0.86, alpha: 0.22))
+    context.fillPath()
+
+    let panelRect = CGRect(
+        x: bodyRect.minX + part.size.width * 0.16,
+        y: bodyRect.minY + part.size.height * 0.14,
+        width: part.size.width * 0.68,
+        height: part.size.height * 0.56
+    )
+    let panelPath = roundedPath(panelRect, radius: part.size.width * 0.10)
+    context.addPath(panelPath)
+    context.clip()
+    drawLinearGradient(
+        in: context,
+        colors: [
+            color(0.17, 0.18, 0.20),
+            color(0.08, 0.09, 0.10)
+        ],
+        locations: [0.0, 1.0],
+        start: CGPoint(x: panelRect.minX, y: panelRect.maxY),
+        end: CGPoint(x: panelRect.maxX, y: panelRect.minY)
+    )
+    context.resetClip()
+
+    context.addPath(panelPath)
+    context.setLineWidth(max(1.0, part.size.width * 0.018))
     context.setStrokeColor(color(1.0, 1.0, 1.0, alpha: 0.08))
     context.strokePath()
 
-    context.saveGState()
-    context.setShadow(offset: .zero, blur: size * 0.055, color: color(0.90, 0.76, 0.18, alpha: 0.26))
-    let glowRect = CGRect(x: size * 0.30, y: size * 0.20, width: size * 0.40, height: size * 0.56)
-    context.addEllipse(in: glowRect)
-    context.setFillColor(color(0.90, 0.76, 0.18, alpha: 0.16))
+    drawSideRidges(in: context, bodyRect: bodyRect, iconSize: iconSize)
+
+    let badgeRect = CGRect(
+        x: bodyRect.minX + part.size.width * 0.13,
+        y: bodyRect.maxY - part.size.height * 0.20,
+        width: part.size.width * 0.30,
+        height: part.size.height * 0.12
+    )
+    let badgePath = roundedPath(badgeRect, radius: badgeRect.height / 2)
+    context.addPath(badgePath)
+    context.setFillColor(part.palette.badge)
     context.fillPath()
-    context.restoreGState()
 
-    let bodyRect = CGRect(x: size * 0.355, y: size * 0.18, width: size * 0.29, height: size * 0.48)
-    let connectorRect = CGRect(x: size * 0.455, y: bodyRect.maxY - size * 0.005, width: size * 0.09, height: size * 0.085)
-    let sliderRect = CGRect(x: size * 0.34, y: size * 0.69, width: size * 0.32, height: size * 0.17)
-
-    drawGoldShape(in: context, rect: bodyRect, radius: size * 0.06, shadowBlur: size * 0.028)
-    drawGoldShape(in: context, rect: connectorRect, radius: size * 0.028, shadowBlur: size * 0.018)
-    drawSlider(in: context, rect: sliderRect, size: size)
-    drawTeeth(in: context, rect: bodyRect, size: size)
-    drawChannel(in: context, rect: bodyRect, size: size)
-    drawMonogram(in: context, rect: bodyRect, size: size)
-    drawHighlights(in: context, bodyRect: bodyRect, sliderRect: sliderRect, size: size)
-}
-
-func drawGoldShape(in context: CGContext, rect: CGRect, radius: CGFloat, shadowBlur: CGFloat) {
-    let path = roundedPath(rect, radius: radius)
-
-    context.saveGState()
-    context.setShadow(offset: CGSize(width: 0, height: -rect.height * 0.02), blur: shadowBlur, color: color(0.04, 0.02, 0.0, alpha: 0.42))
-    context.addPath(path)
-    context.clip()
-    drawLinearGradient(
-        in: context,
-        colors: [
-            color(0.96, 0.84, 0.31),
-            color(0.90, 0.76, 0.18),
-            color(0.64, 0.46, 0.08),
-        ],
-        locations: [0.0, 0.52, 1.0],
-        start: CGPoint(x: rect.minX, y: rect.maxY),
-        end: CGPoint(x: rect.maxX, y: rect.minY)
+    drawText(
+        part.partNumber,
+        in: badgeRect.offsetBy(dx: 0, dy: badgeRect.height * 0.03),
+        fontSize: max(iconSize * 0.038, 9),
+        weight: .bold,
+        color: part.palette.badgeText,
+        alignment: .center
     )
-    context.restoreGState()
 
-    context.addPath(path)
-    context.setLineWidth(max(1.0, rect.width * 0.02))
-    context.setStrokeColor(color(1.0, 0.96, 0.82, alpha: 0.16))
-    context.strokePath()
-}
+    if part.isFront {
+        let rarRect = CGRect(
+            x: panelRect.minX,
+            y: panelRect.midY - part.size.height * 0.12,
+            width: panelRect.width,
+            height: part.size.height * 0.24
+        )
+        drawText(
+            "RAR",
+            in: rarRect,
+            fontSize: iconSize * 0.088,
+            weight: .black,
+            color: NSColor(calibratedWhite: 0.97, alpha: 0.96),
+            alignment: .center
+        )
 
-func drawSlider(in context: CGContext, rect: CGRect, size: CGFloat) {
-    drawGoldShape(in: context, rect: rect, radius: size * 0.06, shadowBlur: size * 0.028)
-
-    let innerRect = rect.insetBy(dx: rect.width * 0.25, dy: rect.height * 0.23)
-    let innerPath = roundedPath(innerRect, radius: size * 0.035)
-    context.saveGState()
-    context.addPath(innerPath)
-    context.clip()
-    drawLinearGradient(
-        in: context,
-        colors: [
-            color(0.16, 0.17, 0.19),
-            color(0.08, 0.09, 0.10),
-        ],
-        locations: [0.0, 1.0],
-        start: CGPoint(x: innerRect.minX, y: innerRect.maxY),
-        end: CGPoint(x: innerRect.maxX, y: innerRect.minY)
-    )
-    context.restoreGState()
-
-    context.addPath(innerPath)
-    context.setLineWidth(size * 0.01)
-    context.setStrokeColor(color(1.0, 0.98, 0.84, alpha: 0.14))
-    context.strokePath()
-}
-
-func drawTeeth(in context: CGContext, rect: CGRect, size: CGFloat) {
-    let toothCount = 10
-    let segmentHeight = rect.height / CGFloat(toothCount)
-    let toothHeight = segmentHeight * 0.42
-    let toothWidth = rect.width * 0.18
-    let inset = rect.width * 0.08
-    let leftX = rect.minX + inset
-    let rightX = rect.maxX - inset - toothWidth
-
-    for index in 0..<toothCount {
-        let y = rect.maxY - segmentHeight * CGFloat(index + 1) + (segmentHeight - toothHeight) * 0.5
-        let toothRect = CGRect(x: leftX, y: y, width: toothWidth, height: toothHeight)
-        let mirroredRect = CGRect(x: rightX, y: y, width: toothWidth, height: toothHeight)
-        fillTooth(in: context, rect: toothRect, radius: toothHeight * 0.42)
-        fillTooth(in: context, rect: mirroredRect, radius: toothHeight * 0.42)
+        let partCaptionRect = CGRect(
+            x: panelRect.minX,
+            y: panelRect.minY + part.size.height * 0.04,
+            width: panelRect.width,
+            height: part.size.height * 0.09
+        )
+        drawText(
+            "PART 03",
+            in: partCaptionRect,
+            fontSize: iconSize * 0.033,
+            weight: .semibold,
+            color: NSColor(calibratedWhite: 0.88, alpha: 0.82),
+            alignment: .center
+        )
     }
+
+    context.restoreGState()
 }
 
-func fillTooth(in context: CGContext, rect: CGRect, radius: CGFloat) {
-    let path = roundedPath(rect, radius: radius)
-    context.saveGState()
-    context.addPath(path)
-    context.clip()
-    drawLinearGradient(
-        in: context,
-        colors: [
-            color(0.98, 0.87, 0.36),
-            color(0.89, 0.73, 0.16),
-            color(0.60, 0.42, 0.06),
-        ],
-        locations: [0.0, 0.45, 1.0],
-        start: CGPoint(x: rect.minX, y: rect.maxY),
-        end: CGPoint(x: rect.maxX, y: rect.minY)
+func drawSideRidges(in context: CGContext, bodyRect: CGRect, iconSize: CGFloat) {
+    let ridgeCount = 6
+    let ridgeWidth = bodyRect.width * 0.13
+    let ridgeHeight = bodyRect.height * 0.04
+    let leftX = bodyRect.minX + bodyRect.width * 0.07
+    let rightX = bodyRect.maxX - bodyRect.width * 0.07 - ridgeWidth
+
+    for index in 0..<ridgeCount {
+        let y = bodyRect.minY + bodyRect.height * 0.18 + CGFloat(index) * bodyRect.height * 0.10
+        let leftRect = CGRect(x: leftX, y: y, width: ridgeWidth, height: ridgeHeight)
+        let rightRect = CGRect(x: rightX, y: y, width: ridgeWidth, height: ridgeHeight)
+
+        for rect in [leftRect, rightRect] {
+            let path = roundedPath(rect, radius: ridgeHeight / 2)
+            context.addPath(path)
+            context.setFillColor(color(1.0, 0.97, 0.85, alpha: 0.22))
+            context.fillPath()
+        }
+    }
+
+    let shineRect = CGRect(
+        x: bodyRect.minX + bodyRect.width * 0.18,
+        y: bodyRect.maxY - bodyRect.height * 0.16,
+        width: bodyRect.width * 0.52,
+        height: max(iconSize * 0.010, 1.0)
     )
-    context.restoreGState()
+    let shinePath = roundedPath(shineRect, radius: shineRect.height / 2)
+    context.addPath(shinePath)
+    context.setFillColor(color(1.0, 1.0, 1.0, alpha: 0.25))
+    context.fillPath()
 }
 
-func drawChannel(in context: CGContext, rect: CGRect, size: CGFloat) {
-    let channelRect = rect.insetBy(dx: rect.width * 0.31, dy: rect.height * 0.07)
-    let channelPath = roundedPath(channelRect, radius: size * 0.03)
-    context.saveGState()
-    context.addPath(channelPath)
-    context.clip()
-    drawLinearGradient(
-        in: context,
-        colors: [
-            color(0.18, 0.19, 0.21),
-            color(0.08, 0.08, 0.09),
-        ],
-        locations: [0.0, 1.0],
-        start: CGPoint(x: channelRect.minX, y: channelRect.maxY),
-        end: CGPoint(x: channelRect.maxX, y: channelRect.minY)
-    )
-    context.restoreGState()
-}
+func drawText(
+    _ text: String,
+    in rect: CGRect,
+    fontSize: CGFloat,
+    weight: NSFont.Weight,
+    color: NSColor,
+    alignment: NSTextAlignment
+) {
+    let paragraph = NSMutableParagraphStyle()
+    paragraph.alignment = alignment
 
-func drawMonogram(in context: CGContext, rect: CGRect, size: CGFloat) {
-    let clippedRect = rect.insetBy(dx: rect.width * 0.12, dy: rect.height * 0.12)
-    let clipPath = roundedPath(clippedRect, radius: size * 0.028)
-    let monogram = NSBezierPath()
-    monogram.move(to: CGPoint(x: clippedRect.minX + clippedRect.width * 0.12, y: clippedRect.maxY - clippedRect.height * 0.10))
-    monogram.line(to: CGPoint(x: clippedRect.maxX - clippedRect.width * 0.12, y: clippedRect.maxY - clippedRect.height * 0.10))
-    monogram.line(to: CGPoint(x: clippedRect.minX + clippedRect.width * 0.22, y: clippedRect.midY))
-    monogram.line(to: CGPoint(x: clippedRect.maxX - clippedRect.width * 0.12, y: clippedRect.midY))
-    monogram.line(to: CGPoint(x: clippedRect.minX + clippedRect.width * 0.12, y: clippedRect.minY + clippedRect.height * 0.10))
-    monogram.line(to: CGPoint(x: clippedRect.maxX - clippedRect.width * 0.12, y: clippedRect.minY + clippedRect.height * 0.10))
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: NSFont.systemFont(ofSize: fontSize, weight: weight),
+        .foregroundColor: color,
+        .paragraphStyle: paragraph,
+        .kern: -fontSize * 0.03
+    ]
 
-    context.saveGState()
-    context.addPath(clipPath)
-    context.clip()
-    context.addPath(monogram.cgPath)
-    context.setLineWidth(size * 0.06)
-    context.setLineCap(.round)
-    context.setLineJoin(.round)
-    context.setStrokeColor(color(0.09, 0.10, 0.11))
-    context.strokePath()
-    context.restoreGState()
-}
-
-func drawHighlights(in context: CGContext, bodyRect: CGRect, sliderRect: CGRect, size: CGFloat) {
-    let bodyHighlight = NSBezierPath()
-    bodyHighlight.move(to: CGPoint(x: bodyRect.minX + bodyRect.width * 0.14, y: bodyRect.maxY - bodyRect.height * 0.08))
-    bodyHighlight.line(to: CGPoint(x: bodyRect.minX + bodyRect.width * 0.14, y: bodyRect.minY + bodyRect.height * 0.08))
-
-    context.addPath(bodyHighlight.cgPath)
-    context.setLineWidth(size * 0.012)
-    context.setLineCap(.round)
-    context.setStrokeColor(color(1.0, 0.98, 0.85, alpha: 0.12))
-    context.strokePath()
-
-    let sliderHighlight = NSBezierPath()
-    sliderHighlight.move(to: CGPoint(x: sliderRect.minX + sliderRect.width * 0.18, y: sliderRect.maxY - sliderRect.height * 0.18))
-    sliderHighlight.line(to: CGPoint(x: sliderRect.maxX - sliderRect.width * 0.28, y: sliderRect.maxY - sliderRect.height * 0.18))
-    context.addPath(sliderHighlight.cgPath)
-    context.setLineWidth(size * 0.01)
-    context.setStrokeColor(color(1.0, 0.98, 0.85, alpha: 0.18))
-    context.strokePath()
-}
-
-func roundedPath(_ rect: CGRect, radius: CGFloat) -> CGPath {
-    NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius).cgPath
-}
-
-func drawLinearGradient(in context: CGContext, colors: [CGColor], locations: [CGFloat], start: CGPoint, end: CGPoint) {
-    guard let gradient = CGGradient(colorsSpace: colorSpace, colors: colors as CFArray, locations: locations) else { return }
-    context.drawLinearGradient(gradient, start: start, end: end, options: [])
-}
-
-func drawRadialGradient(in context: CGContext, colors: [CGColor], locations: [CGFloat], startCenter: CGPoint, startRadius: CGFloat, endCenter: CGPoint, endRadius: CGFloat) {
-    guard let gradient = CGGradient(colorsSpace: colorSpace, colors: colors as CFArray, locations: locations) else { return }
-    context.drawRadialGradient(gradient, startCenter: startCenter, startRadius: startRadius, endCenter: endCenter, endRadius: endRadius, options: [])
-}
-
-func color(_ red: CGFloat, _ green: CGFloat, _ blue: CGFloat, alpha: CGFloat = 1.0) -> CGColor {
-    NSColor(calibratedRed: red, green: green, blue: blue, alpha: alpha).cgColor
+    let attributedString = NSAttributedString(string: text, attributes: attributes)
+    attributedString.draw(with: rect, options: [.usesLineFragmentOrigin, .usesFontLeading])
 }
 
 func writeJSON<T: Encodable>(_ value: T, to url: URL) throws {
@@ -370,30 +432,41 @@ func writeJSON<T: Encodable>(_ value: T, to url: URL) throws {
     try data.write(to: url, options: .atomic)
 }
 
-extension NSBezierPath {
-    var cgPath: CGPath {
-        let path = CGMutablePath()
-        var points = [NSPoint](repeating: .zero, count: 3)
+func roundedPath(_ rect: CGRect, radius: CGFloat) -> CGPath {
+    CGPath(roundedRect: rect, cornerWidth: radius, cornerHeight: radius, transform: nil)
+}
 
-        for index in 0..<elementCount {
-            switch element(at: index, associatedPoints: &points) {
-            case .moveTo:
-                path.move(to: points[0])
-            case .lineTo:
-                path.addLine(to: points[0])
-            case .curveTo:
-                path.addCurve(to: points[2], control1: points[0], control2: points[1])
-            case .cubicCurveTo:
-                path.addCurve(to: points[2], control1: points[0], control2: points[1])
-            case .quadraticCurveTo:
-                path.addQuadCurve(to: points[1], control: points[0])
-            case .closePath:
-                path.closeSubpath()
-            @unknown default:
-                break
-            }
-        }
+func drawLinearGradient(
+    in context: CGContext,
+    colors: [CGColor],
+    locations: [CGFloat],
+    start: CGPoint,
+    end: CGPoint
+) {
+    let cgGradient = CGGradient(colorsSpace: colorSpace, colors: colors as CFArray, locations: locations)!
+    context.drawLinearGradient(cgGradient, start: start, end: end, options: [])
+}
 
-        return path
-    }
+func drawRadialGradient(
+    in context: CGContext,
+    colors: [CGColor],
+    locations: [CGFloat],
+    startCenter: CGPoint,
+    startRadius: CGFloat,
+    endCenter: CGPoint,
+    endRadius: CGFloat
+) {
+    let cgGradient = CGGradient(colorsSpace: colorSpace, colors: colors as CFArray, locations: locations)!
+    context.drawRadialGradient(
+        cgGradient,
+        startCenter: startCenter,
+        startRadius: startRadius,
+        endCenter: endCenter,
+        endRadius: endRadius,
+        options: []
+    )
+}
+
+func color(_ red: CGFloat, _ green: CGFloat, _ blue: CGFloat, alpha: CGFloat = 1.0) -> CGColor {
+    CGColor(red: red, green: green, blue: blue, alpha: alpha)
 }
