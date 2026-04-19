@@ -1,6 +1,31 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+// MARK: - Shared chrome (matches file list row checkmarks)
+
+private struct CircleCheckmarkIndicator: View {
+    let isOn: Bool
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(isOn ? Theme.accent : Color.clear)
+                .frame(width: 16, height: 16)
+                .overlay(
+                    Circle().stroke(
+                        isOn ? Theme.accent : Theme.textMuted,
+                        lineWidth: 1.2
+                    )
+                )
+            if isOn {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(.black)
+            }
+        }
+    }
+}
+
 // MARK: - Supporting Views (extracted to avoid recursive type inference issues)
 
 private struct TreeRowView: View {
@@ -45,23 +70,8 @@ private struct TreeRowView: View {
     }
 
     private var checkbox: some View {
-        ZStack {
-            Circle()
-                .fill(isOnBinding.wrappedValue ? Theme.accent : Color.clear)
-                .frame(width: 16, height: 16)
-                .overlay(
-                    Circle().stroke(
-                        isOnBinding.wrappedValue ? Theme.accent : Theme.textMuted,
-                        lineWidth: 1.2
-                    )
-                )
-            if isOnBinding.wrappedValue {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 8, weight: .bold))
-                    .foregroundStyle(.black)
-            }
-        }
-        .contentShape(Rectangle())
+        CircleCheckmarkIndicator(isOn: isOnBinding.wrappedValue)
+            .contentShape(Rectangle())
     }
 
     private var rowContent: some View {
@@ -589,18 +599,26 @@ struct ConfigurationView: View {
                     .padding(.horizontal, 8).padding(.vertical, 4)
                     .background(Theme.surface, in: Capsule())
                 } else if !gitignorePaths.isEmpty {
-                    Toggle(isOn: respectGitignoreBinding) {
-                        HStack(spacing: 4) {
-                            Text("Respect .gitignore")
-                            Text("(\(gitignorePaths.count))")
-                                .foregroundStyle(Theme.textSecondary)
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.15)) {
+                            respectGitignoreBinding.wrappedValue.toggle()
                         }
+                    } label: {
+                        HStack(spacing: 8) {
+                            CircleCheckmarkIndicator(isOn: respectGitignoreBinding.wrappedValue)
+                            HStack(spacing: 4) {
+                                Text("Respect .gitignore")
+                                    .font(.system(size: 11, weight: .medium))
+                                Text("(\(formattedGitignoreIgnoreCount))")
+                                    .font(.system(size: 11, weight: .medium))
+                                    .foregroundStyle(Theme.textSecondary)
+                            }
+                            .foregroundStyle(Theme.textPrimary)
+                        }
+                        .padding(.leading, 10).padding(.trailing, 12).padding(.vertical, 6)
+                        .background(Theme.surface, in: Capsule())
                     }
-                    .toggleStyle(.checkbox)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
-                    .padding(.horizontal, 8).padding(.vertical, 4)
-                    .background(Theme.surface, in: Capsule())
+                    .buttonStyle(.plain)
                 }
                 Text("\(includedCount) selected")
                     .font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.textSecondary)
@@ -1229,6 +1247,17 @@ struct ConfigurationView: View {
     }
 
     private var includedCount: Int { flatten(nodes).filter(\.isIncluded).count }
+
+    private var formattedGitignoreIgnoreCount: String {
+        let n = gitignorePaths.count
+        if n >= 10_000 {
+            let f = NumberFormatter()
+            f.numberStyle = .decimal
+            f.groupingSeparator = ","
+            return f.string(from: NSNumber(value: n)) ?? "\(n)"
+        }
+        return "\(n)"
+    }
 
     struct NodeRow { let node: FileNode; let level: Int }
 
