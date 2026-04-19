@@ -588,6 +588,19 @@ struct ConfigurationView: View {
                     }
                     .padding(.horizontal, 8).padding(.vertical, 4)
                     .background(Theme.surface, in: Capsule())
+                } else if !gitignorePaths.isEmpty {
+                    Toggle(isOn: respectGitignoreBinding) {
+                        HStack(spacing: 4) {
+                            Text("Respect .gitignore")
+                            Text("(\(gitignorePaths.count))")
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                    }
+                    .toggleStyle(.checkbox)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(Theme.textPrimary)
+                    .padding(.horizontal, 8).padding(.vertical, 4)
+                    .background(Theme.surface, in: Capsule())
                 }
                 Text("\(includedCount) selected")
                     .font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.textSecondary)
@@ -650,25 +663,10 @@ struct ConfigurationView: View {
 
             separator
 
-            VStack(alignment: .leading, spacing: 10) {
-                if !gitignorePaths.isEmpty {
-                    Toggle(isOn: respectGitignoreBinding) {
-                        HStack(spacing: 6) {
-                            Text("Respect .gitignore")
-                            Text("(\(gitignorePaths.count) path\(gitignorePaths.count == 1 ? "" : "s"))")
-                                .foregroundStyle(Theme.textSecondary)
-                        }
-                    }
-                    .toggleStyle(.checkbox)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
-                }
-
-                Toggle("Strip Mac metadata", isOn: $removeMacFiles)
-                    .toggleStyle(.switch).tint(Theme.accent)
-                    .font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.textPrimary)
-            }
-            .padding(.horizontal, 18).padding(.vertical, 12)
+            Toggle("Strip Mac metadata", isOn: $removeMacFiles)
+                .toggleStyle(.switch).tint(Theme.accent)
+                .font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.textPrimary)
+                .padding(.horizontal, 18).padding(.vertical, 12)
         }
     }
 
