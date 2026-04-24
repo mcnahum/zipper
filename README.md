@@ -13,6 +13,9 @@ A simple, elegant and powerful archival utility for macOS, built with SwiftUI.
 <img width="800" height="491" alt="CleanShot 2026-04-16 at 02 20 13" src="https://github.com/user-attachments/assets/c80c7ce2-f81a-4982-a7ad-ed4c4a960e96" />
 
 ## Installation
+App Store:
+https://apps.apple.com/in/app/zipper-archive-utility/id6762367539?mt=12
+
 You can install Zipper easily via Homebrew:
 ```bash
 brew install --cask kshah00/tap/zipper
